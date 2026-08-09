@@ -1,7 +1,7 @@
 mod commands;
 use commands::init::init;
-
-use clap::Parser;
+use clap::{Parser};
+mod utils;
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -16,18 +16,12 @@ struct Args {
 }
 
 fn main() {
-    println!("Hello, world!");
-    print_name();
+
     init();
 
-    let args = Args::parse();
+    // let args = Args::parse();
 
-    for _ in 0..args.count {
-        println!("Hello {}!", args.name);
-    }
-}
-
-fn print_name() {
-    let name: &str = "Rizwan";
-    println!("my name is !{}", name);
+    // for _ in 0..args.count {
+    //     println!("Hello {}!", args.name);
+    // }
 }
