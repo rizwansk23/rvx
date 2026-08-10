@@ -11,7 +11,6 @@ pub fn read_file(path: &str) -> String {
     };
 
     let text = result.iter().fold(String::from(""), convert_to_string);
-    println!("run file  = {:?}", text);
-
+    
     return text;
 }
