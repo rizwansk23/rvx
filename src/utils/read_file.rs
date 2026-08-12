@@ -1,6 +1,7 @@
 use std::fs::read;
 use std::char;
 
+#[allow(unused)]
 pub fn read_file(path: &str) -> String {
     let result = read(path).unwrap();
 

@@ -1,6 +1,8 @@
-use crate::utils::{read_file, write_file};
-use clap::{Command, ValueEnum, ValueHint, arg, command, value_parser};
-// use std::collections::HashMap;
+use clap::ArgMatches;
+use std::path::PathBuf;
+
+use crate::utils::{create_dir, write_file};
+use clap::{Command, ValueEnum, ValueHint, arg, value_parser};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 enum Language {
@@ -10,78 +12,69 @@ enum Language {
 }
 
 impl Language {
-    fn run(&self) {
+    fn run(&self, path: &str) {
         match self {
-            Language::Python => create_python_file("hello"),
+            Language::Python => create_python_file(path),
             Language::React => println!("React file created"),
             Language::Flask => println!("Flask file created"),
         }
     }
 }
 
-pub fn init() {
-    let init_command = command!()
-        .propagate_version(true)
-        .subcommand_required(true)
-        .arg_required_else_help(true)
-        .subcommand(
-            Command::new("init")
-                .about("initialize the command")
-                .arg(
-                    arg!([language])
-                        .value_parser(value_parser!(Language))
-                        .required(true)
-                        .help("help to make template"),
-                )
-                .arg(
-                    arg!([pathname])
-                        .value_hint(ValueHint::FilePath)
-                        .value_parser(value_parser!(String))
-                        .required(true),
-                ),
+pub fn init() -> Command {
+    let init_command = Command::new("init")
+        .about("initialize the command")
+        .color(clap::ColorChoice::Always)
+        .arg(
+            arg!([language])
+                .value_parser(value_parser!(Language))
+                .required(true)
+                .help("help to make template"),
         )
-        .get_matches();
+        .arg(
+            arg!([pathname])
+                .value_hint(ValueHint::FilePath)
+                .value_parser(value_parser!(String))
+                .required(true),
+        );
 
-    // let mut init_method: HashMap<String, fn()> = HashMap::new();
-
-    // init_method.insert("python".to_string(), create_python_file);
-
-    // if let Some(("init", sub_matches)) = init_command.subcommand() {
-    //     if let Some(lang) = sub_matches.get_one::<String>("language") {
-    //         let key = lang.to_lowercase();
-    //         if let Some(action) = init_method.get(&key) {
-    //             action();
-    //             print!("file created")
-    //         } else {
-    //             println!("Unsupported language: {}", lang);
-    //         }
-    //     }
-    // }
-
-    if let Some(("init", sub_matches)) = init_command.subcommand() {
-        if let Some(lang) = sub_matches.get_one::<Language>("language") {
-            lang.run();
-            println!("file created successfully")
-        }
-    };
-
-    match init_command.subcommand() {
-        Some(("init", sub_matches)) => match sub_matches.get_one::<String>("pathname") {
-            Some(paths) if paths == "." => print!("file paths ."),
-
-            Some(paths) => print!("craeted {}",paths),
-
-            _ => ()
-        },
-        _ => unreachable!("Exhausted list of subcommands and subcommand_required prevents `None`"),
-    };
-
+    return init_command;
 }
 
-fn create_python_file(paths:&str) {
-    let path = "./src/head.txt";
+pub fn init_exec(sub_matches: &ArgMatches) {
+    
+    let pathname = sub_matches.get_one::<String>("pathname").unwrap();
 
-    let text = read_file::read_file(paths);
+    if let Some(lang) = sub_matches.get_one::<Language>("language") {
+        lang.run(pathname);
+        println!("file created successfully")
+    }
+}
 
-    write_file::write_file("./src/script.py", text);
+fn create_python_file(paths: &str) {
+    let app = include_str!("../../templates/python/app.py");
+    let gitignore = include_str!("../../templates/python/.gitignore");
+    let pyproject = include_str!("../../templates/python/pyproject.toml");
+    let readme = include_str!("../../templates/python/README.md");
+
+    if paths == "." {
+        write_file::write_file("app.py", app.to_string());
+        write_file::write_file(".gitignore", gitignore.to_string());
+        write_file::write_file("pyproject.toml", pyproject.to_string());
+        write_file::write_file("README.md", readme.to_string());
+    } else {
+        let dir_path = PathBuf::from(paths);
+
+        create_dir::create_dir(paths);
+
+        let app_path = dir_path.join("app.py");
+        let gitignore_path = dir_path.join(".gitignore");
+        let pyproject_path = dir_path.join("pyproject.toml");
+        let readme_path = dir_path.join("README.md");
+
+        write_file::write_file(&app_path.to_str().unwrap(), app.to_string());
+        write_file::write_file(&gitignore_path.to_str().unwrap(), gitignore.to_string());
+        write_file::write_file(&pyproject_path.to_str().unwrap(), pyproject.to_string());
+        write_file::write_file(&readme_path.to_str().unwrap(), readme.to_string());
+    }
 }
