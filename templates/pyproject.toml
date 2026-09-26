@@ -1,0 +1,7 @@
+[project]
+name = "my-project"
+version = "0.1.0"
+description = "A Python project created with vrx"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
