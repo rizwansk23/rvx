@@ -1,8 +1,6 @@
 use clap::{ArgMatches, Command, ValueHint, arg, value_parser};
 use std::{
-    env,
-    path::{self, Path, PathBuf},
-    process,
+    env, path::{self, Path, PathBuf}, process,
 };
 
 pub const VENV: &str = ".venv";
